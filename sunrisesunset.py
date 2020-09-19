@@ -12,11 +12,11 @@
 # $ sudo easy_install --upgrade pytz
 #
 # CVS/SVN Info
-#----------------------------------
+# ----------------------------------
 # $Author: cnobile $
 # $Date: 2009-08-03 00:47:13 $
 # $Revision: 1.9 $
-#----------------------------------
+# ----------------------------------
 #
 # Contributions by:
 #    Darryl Smith -- Noticed a bug with atan fixed with atan2.
@@ -36,6 +36,8 @@
 #    Carl J. Nobile - initial API and implementation
 ##########################################################################
 
+from __future__ import absolute_import
+from __future__ import print_function
 import datetime
 from math import degrees, radians, atan2, cos, sin, pi, sqrt, fabs
 
@@ -67,7 +69,7 @@ class SunriseSunset(object):
 
         if zenith not in self.__ZENITH:
             msg = "Invalid zenith name [%s] must be one of: %s"
-            raise ValueError(msg % (zenith, self.__ZENITH.keys()))
+            raise ValueError(msg % (zenith, list(self.__ZENITH.keys())))
 
         if abs(lat) > 67:
             raise ValueError('Invalid latitude: %s' % lat)
@@ -102,43 +104,42 @@ class SunriseSunset(object):
         result = False
         delta = datetime.timedelta(minutes=collar)
 
-##        if (self.__sunrise - delta) > self.__dateLocal or \
-##               self.__dateLocal > (self.__sunset + delta):
-##            result = True
-##
-##        return result
-        
-##  Above comment out and below code modified by Sean Burns Aug 2014 to give a better isNight calc
+        ##        if (self.__sunrise - delta) > self.__dateLocal or \
+        ##               self.__dateLocal > (self.__sunset + delta):
+        ##            result = True
+        ##
+        ##        return result
+
+        ##  Above comment out and below code modified by Sean Burns Aug 2014 to give a better isNight calc
 
         """To determine if it is day or night we need to find the last transition (sunrise or sunset)
         that occurred before the time in question.
         If the last transition was a sunrise then it is day, if it was a sunset then it is night"""
 
-        #move forward a day, then start working backwards until a sunrise or a sunset or both occur
-        #before the datetime in question
+        # move forward a day, then start working backwards until a sunrise or a sunset or both occur
+        # before the datetime in question
         oneDay = datetime.timedelta(days=1)
         workingDate = self.__dateLocal + oneDay
         nextSunRiseSet = SunriseSunset(workingDate, self.__lat, self.__lon, self.__zenith)
         while nextSunRiseSet.getSunRiseSet()[0] > self.__dateLocal \
-        and nextSunRiseSet.getSunRiseSet()[1] > self.__dateLocal :
+                and nextSunRiseSet.getSunRiseSet()[1] > self.__dateLocal:
             workingDate = workingDate - oneDay
             nextSunRiseSet = SunriseSunset(workingDate, self.__lat, self.__lon, self.__zenith)
 
         if nextSunRiseSet.getSunRiseSet()[0] < self.__dateLocal \
-        and nextSunRiseSet.getSunRiseSet()[1] < self.__dateLocal :
-            #both sunrise and sunset occur before
-            if nextSunRiseSet.getSunRiseSet()[1] > nextSunRiseSet.getSunRiseSet()[0] :
-                #sunset is the last occurrence
+                and nextSunRiseSet.getSunRiseSet()[1] < self.__dateLocal:
+            # both sunrise and sunset occur before
+            if nextSunRiseSet.getSunRiseSet()[1] > nextSunRiseSet.getSunRiseSet()[0]:
+                # sunset is the last occurrence
                 result = True
-        else :
-            #only one of the two transitions occurs before
-            if nextSunRiseSet.getSunRiseSet()[1] < self.__dateLocal :
-                #sunset occured before
+        else:
+            # only one of the two transitions occurs before
+            if nextSunRiseSet.getSunRiseSet()[1] < self.__dateLocal:
+                # sunset occured before
                 result = True
 
-                
         return result
-        
+
     def getSunRiseSet(self):
         """
         Get the sunrise and sunset.
@@ -173,12 +174,12 @@ class SunriseSunset(object):
         utold = pi
         utnew = 0
         altitude = self.__ZENITH[self.__zenith]
-        sinAlt = sin(radians(altitude))       # solar altitude
-        sinPhi = sin(radians(self.__lat))     # viewer's latitude
-        cosPhi = cos(radians(self.__lat))     #
-        lon = radians(self.__lon)             # viewer's longitude
+        sinAlt = sin(radians(altitude))  # solar altitude
+        sinPhi = sin(radians(self.__lat))  # viewer's latitude
+        cosPhi = cos(radians(self.__lat))  #
+        lon = radians(self.__lon)  # viewer's longitude
         ct = 0
-        #print rs, ephem2000Day, sinAlt, sinPhi, cosPhi, lon
+        # print rs, ephem2000Day, sinAlt, sinPhi, cosPhi, lon
 
         while fabs(utold - utnew) > 0.001 and ct < 35:
             ct += 1
@@ -204,11 +205,11 @@ class SunriseSunset(object):
             else:
                 correction = atan2((sqrt(1 - cosc * cosc)), cosc)
 
-            #print cosc, correction, utold, utnew
+            # print cosc, correction, utold, utnew
             utnew = self.__getRange(utold - (gha + lon + rs * correction))
 
         decimalTime = degrees(utnew) / 15
-        #print utnew, decimalTime
+        # print utnew, decimalTime
         return self.__get24HourLocalTime(rs, decimalTime)
 
     def __getRange(self, value):
@@ -234,14 +235,14 @@ class SunriseSunset(object):
         @return: The C{datetime} objects set to either sunrise or sunset.
         """
         decimalTime += self.__offsetUTC
-        #print decimalTime
+        # print decimalTime
 
         if decimalTime < 0.0:
             decimalTime += 24.0
         elif decimalTime > 24.0:
             decimalTime -= 24.0
 
-        #print decimalTime
+        # print decimalTime
         hour = int(decimalTime)
         tmp = (decimalTime - hour) * 60
         minute = int(tmp)
@@ -260,28 +261,29 @@ def __getRiseSet(date, lat=35.9513, lon=-83.9142, zenith='official'):
     """
     rs = SunriseSunset(date, lat, lon, zenith=zenith)
     riseTime, setTime = rs.getSunRiseSet()
-    print "Using zenith: %s" % zenith
-    print "Date/Time now: %s" % date
-    print "Sunrise: %s" % riseTime
-    print " Sunset: %s" % setTime
-    print "Is night: %s\n" % rs.isNight()
+    print("Using zenith: %s" % zenith)
+    print("Date/Time now: %s" % date)
+    print("Sunrise: %s" % riseTime)
+    print(" Sunset: %s" % setTime)
+    print("Is night: %s\n" % rs.isNight())
 
 
 if __name__ == '__main__':
     import sys, pytz
+
     zone = pytz.timezone("US/Eastern")
 
     # Get sunrise and sunset for now and all the zenith types.
     now = datetime.datetime.now(zone)
     # Get the zenith types.
-    zenithKeys = SunriseSunset._SunriseSunset__ZENITH.keys()
-    print "Test zenith"
+    zenithKeys = list(SunriseSunset._SunriseSunset__ZENITH.keys())
+    print("Test zenith")
 
     for zenith in zenithKeys:
         __getRiseSet(now, zenith=zenith)
 
     # Get sunrise sunset for every hour of the day using the default zenith.
-    print "\nTest 24 hours"
+    print("\nTest 24 hours")
 
     for hour in range(24):
         for minute in range(0, 60, 10):
@@ -292,81 +294,82 @@ if __name__ == '__main__':
     sys.exit(0)
 
 """ Routines added by Sean Burns Jul 30 2014 to calculate flight night hours """
-   
+
+
 def nightCalc(dep_datetime, dep_lat, dep_lon, arr_datetime, arr_lat, arr_lon, zenith='civil'):
     """ routine to calculate the night hours on a flight from one location to
         another, returns datetime.timedelta for day and night hours and a boolean to say
         if the landing (arrival) occured at night """
-    
-    if dep_datetime.tzinfo == None : dep_datetime = dep_datetime.replace(tzinfo=UTC())
-    if arr_datetime.tzinfo == None : arr_datetime = arr_datetime.replace(tzinfo=UTC())
+
+    if dep_datetime.tzinfo is None: dep_datetime = dep_datetime.replace(tzinfo=UTC())
+    if arr_datetime.tzinfo is None: arr_datetime = arr_datetime.replace(tzinfo=UTC())
     oneDay = datetime.timedelta(days=1)
-     
-    depSunriseSunset = SunriseSunset(dep_datetime, dep_lat, dep_lon, zenith)
-    arrSunriseSunset = SunriseSunset(arr_datetime, arr_lat, arr_lon, zenith)
+
+    dep_sunrise_sunset = SunriseSunset(dep_datetime, dep_lat, dep_lon, zenith)
+    arr_sunrise_sunset = SunriseSunset(arr_datetime, arr_lat, arr_lon, zenith)
     td_total = arr_datetime - dep_datetime
-    
-    is_night_dep = depSunriseSunset.isNight()
-    is_night_arr = arrSunriseSunset.isNight()
-    
-    if is_night_dep == is_night_arr :
-        if is_night_dep :
-            #all night time
+
+    is_night_dep = dep_sunrise_sunset.isNight()
+    is_night_arr = arr_sunrise_sunset.isNight()
+
+    if is_night_dep == is_night_arr:
+        if is_night_dep:
+            # all night time
             td_night = td_total
-            td_day = datetime.timedelta(0) #zero
-        else :
-            #all day time
+            td_day = datetime.timedelta(0)  # zero
+        else:
+            # all day time
             td_day = td_total
             td_night = datetime.timedelta(0)
-    else :
-        #night hour calculation necessary
+    else:
+        # night hour calculation necessary
         tp1 = dep_datetime
         tp2 = arr_datetime
-        
-        if is_night_arr :
-            #day to night - get ts1 next sunset immediately after dep_datetime tp1
+
+        if is_night_arr:
+            # day to night - get ts1 next sunset immediately after dep_datetime tp1
             workingDate = dep_datetime - oneDay
             nextSunRiseSet = SunriseSunset(workingDate, dep_lat, dep_lon, zenith)
             ts1 = nextSunRiseSet.getSunRiseSet()[1]
-            while ts1 < tp1 :
-                #move forward a day 
+            while ts1 < tp1:
+                # move forward a day
                 workingDate = workingDate + oneDay
                 nextSunRiseSet = SunriseSunset(workingDate, dep_lat, dep_lon, zenith)
                 ts1 = nextSunRiseSet.getSunRiseSet()[1]
 
-            #calculate ts2 - the sunset immediately before arr_datetime tp2
+            # calculate ts2 - the sunset immediately before arr_datetime tp2
             workingDate = arr_datetime + oneDay
             nextSunRiseSet = SunriseSunset(workingDate, arr_lat, arr_lon, zenith)
             ts2 = nextSunRiseSet.getSunRiseSet()[1]
-            while ts2 > tp2 :
-                #move back a day 
+            while ts2 > tp2:
+                # move back a day
                 workingDate = workingDate - oneDay
                 nextSunRiseSet = SunriseSunset(workingDate, arr_lat, arr_lon, zenith)
                 ts2 = nextSunRiseSet.getSunRiseSet()[1]
-                
-        else :
-            
-            #night to day - get ts1 next sunrise after departure time
+
+        else:
+
+            # night to day - get ts1 next sunrise after departure time
             workingDate = dep_datetime - oneDay
             nextSunRiseSet = SunriseSunset(workingDate, dep_lat, dep_lon, zenith)
             ts1 = nextSunRiseSet.getSunRiseSet()[0]
-            while ts1 < tp1 :
-                #move forward a day 
+            while ts1 < tp1:
+                # move forward a day
                 workingDate = workingDate + oneDay
                 nextSunRiseSet = SunriseSunset(workingDate, dep_lat, dep_lon, zenith)
                 ts1 = nextSunRiseSet.getSunRiseSet()[0]
 
-            #night to day - ts2 = sunrise preceding arrival time
+            # night to day - ts2 = sunrise preceding arrival time
             workingDate = arr_datetime + oneDay
             nextSunRiseSet = SunriseSunset(workingDate, arr_lat, arr_lon, zenith)
             ts2 = nextSunRiseSet.getSunRiseSet()[0]
-            while ts2 > tp2 :
-                #move back a day 
+            while ts2 > tp2:
+                # move back a day
                 workingDate = workingDate - oneDay
                 nextSunRiseSet = SunriseSunset(workingDate, arr_lat, arr_lon, zenith)
                 ts2 = nextSunRiseSet.getSunRiseSet()[0]
-            
-        #calculate t, the time the flight meets the sun transition
+
+        # calculate t, the time the flight meets the sun transition
         """ tp1 = time plane departs
             tp2 = time plane arrives
             ts1 = time of sun transition at departure location
@@ -375,46 +378,49 @@ def nightCalc(dep_datetime, dep_lat, dep_lon, arr_datetime, arr_lat, arr_lon, ze
 
             formula:
             t-tp1 = (ts1-tp1)*(tp2-tp1)/((tp2-tp1)-(ts2-ts1)) """
-        tdp = (tp2-tp1).total_seconds()
-        tds = (ts2-ts1).total_seconds()
-        tdsp1 = (ts1-tp1).total_seconds()
+        tdp = (tp2 - tp1).total_seconds()
+        tds = (ts2 - ts1).total_seconds()
+        tdsp1 = (ts1 - tp1).total_seconds()
 
-        tdttp1 = tdsp1 * tdp / (tdp - tds) #seconds into flight that sunrise/sunset is met
+        tdttp1 = tdsp1 * tdp / (tdp - tds)  # seconds into flight that sunrise/sunset is met
         tdttp1 = datetime.timedelta(seconds=tdttp1)
-        
-        if is_night_arr :
-            #day to night
-            td_day = hhmm_td(td_hhmm(tdttp1)) #rounds to the nearest minute
+
+        if is_night_arr:
+            # day to night
+            td_day = hhmm_td(td_hhmm(tdttp1))  # rounds to the nearest minute
             td_night = tp2 - tp1 - td_day
-        else :
-            #night to day
+        else:
+            # night to day
             td_night = hhmm_td(td_hhmm(tdttp1))
             td_day = tp2 - tp1 - td_night
-            
+
     return td_day, td_night, is_night_arr
 
-def td_hhmm(td) :
+
+def td_hhmm(td):
     """ helper function to convert a timedelta to a string in the format 'hh:mm' """
     sec = td.total_seconds()
-    hh = int(sec/3600)
-    mm = int(round((sec-3600*hh)/60))
-    if mm == 60 :
-        #rounding up from e.g. 02:59:35 would make 02:60 instead of 03:00
+    hh = int(sec / 3600)
+    mm = int(round((sec - 3600 * hh) / 60))
+    if mm == 60:
+        # rounding up from e.g. 02:59:35 would make 02:60 instead of 03:00
         hh += 1
         mm = 0
     hh = str(hh)
     mm = str(mm)
-    while len(hh) < 2 : hh = '0' + hh
-    while len(mm) < 2 : mm = '0' + mm
+    while len(hh) < 2: hh = '0' + hh
+    while len(mm) < 2: mm = '0' + mm
     hhmm = hh + ':' + mm
     return hhmm
 
-def hhmm_td(hhmm) :
+
+def hhmm_td(hhmm):
     hh = int(hhmm[:hhmm.index(':')])
-    mm = int(hhmm[hhmm.index(':')+1:])
-    td = datetime.timedelta(hours=hh,minutes=mm)
+    mm = int(hhmm[hhmm.index(':') + 1:])
+    td = datetime.timedelta(hours=hh, minutes=mm)
     return td
-   
+
+
 # A UTC tzinfo class.
 class UTC(datetime.tzinfo):
     """UTC"""

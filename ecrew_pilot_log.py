@@ -3,6 +3,8 @@ Function that takes an eCrew Pilot logbook report as an input and returns
 a tuple containing a dictionary of flights and a dictionary of sims
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
 import datetime
 
 def process_ecrew_logbook_report(inFileName):
@@ -17,7 +19,7 @@ def process_ecrew_logbook_report(inFileName):
     info_div_key = 'font-family' #divs with useful data in them, not just style boxes
 
     #open input files
-    print 'Opening: ' + inFileName
+    print('Opening: ' + inFileName)
     logbookFile = open(inFileName)
 
     #
@@ -81,7 +83,7 @@ def process_ecrew_logbook_report(inFileName):
             arr_time = datetime.datetime.combine(ecrewtime_to_time(entry[4],flightdate)[1],ecrewtime_to_time(entry[4],flightdate)[0])
             arr_time = add_arrival_days(dep_time, arr_time)
             instr = 0
-            if entry[13] <> "": instr = 1 #Instructor time
+            if entry[13] != "": instr = 1 #Instructor time
 
             flight={ 'dep_time':dep_time,
                      'dep_place':entry[1],
@@ -104,7 +106,7 @@ def process_ecrew_logbook_report(inFileName):
             sim_dict.append(sim)
                 
     logbookFile.close()
-    print "Finished"                   
+    print("Finished")                   
     return (flight_dict,sim_dict)
 
 """

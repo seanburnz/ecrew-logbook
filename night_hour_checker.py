@@ -1,6 +1,9 @@
+
+from __future__ import absolute_import
+from __future__ import print_function
 import datetime, mysql.connector, ecrew_sql_settings, sunrisesunset
 
-print "Opening database connection"
+print("Opening database connection")
 cnx = mysql.connector.connect(user=ecrew_sql_settings.DB_USER,
                               password=ecrew_sql_settings.DB_PWD,
                               host=ecrew_sql_settings.DB_HOST,
@@ -28,8 +31,8 @@ for flight in cursor:
         # data2 = (nightHours[1],flight[0])
         updates += 1
         # cursor2.execute(query2,data2)
-        print flight[0], sunrisesunset.td_hhmm(flight[7]), sunrisesunset.td_hhmm(nightHours[1]), sunrisesunset.td_hhmm(abs(nightHours[1]-flight[7])), flight[8], flight[9]
+        print(flight[0], sunrisesunset.td_hhmm(flight[7]), sunrisesunset.td_hhmm(nightHours[1]), sunrisesunset.td_hhmm(abs(nightHours[1]-flight[7])), flight[8], flight[9])
 # cnx.commit()
-print str(updates) + " flights updated"
-print "Closing database connection"
+print(str(updates) + " flights updated")
+print("Closing database connection")
 cnx.close()
