@@ -13,9 +13,9 @@
 #
 # CVS/SVN Info
 # ----------------------------------
-# $Author$
-# $Date$
-# $Revision$
+# $Author: cnobile $
+# $Date: 2009-08-03 00:47:13 $
+# $Revision: 1.9 $
 # ----------------------------------
 #
 # Contributions by:
@@ -36,6 +36,8 @@
 #    Carl J. Nobile - initial API and implementation
 ##########################################################################
 
+from __future__ import absolute_import
+from __future__ import print_function
 import datetime
 from math import degrees, radians, atan2, cos, sin, pi, sqrt, fabs
 
@@ -43,7 +45,7 @@ from math import degrees, radians, atan2, cos, sin, pi, sqrt, fabs
 class SunriseSunset(object):
     """
     This class determines the sunrise and sunset for zenith standards for the
-    given day. It can also tell you if the given time is during the nigh or
+    given day. It can also tell you if the given time is during the night or
     day.
     """
     __ZENITH = {'official': -0.833,
@@ -55,6 +57,7 @@ class SunriseSunset(object):
     def __init__(self, date, lat, lon, zenith='official'):
         """
         Set the values for the sunrise and sunset calculation.
+
         @param date: A localized datetime object that is timezone aware.
         @param lat: The latitude.
         @param lon: The longitude.
@@ -66,9 +69,9 @@ class SunriseSunset(object):
 
         if zenith not in self.__ZENITH:
             msg = "Invalid zenith name [%s] must be one of: %s"
-            raise ValueError(msg % (zenith, self.__ZENITH.keys()))
+            raise ValueError(msg % (zenith, list(self.__ZENITH.keys())))
 
-        if abs(lat) > 67:  # modified from 63
+        if abs(lat) > 67:
             raise ValueError('Invalid latitude: %s' % lat)
 
         self.__dateLocal = date
@@ -87,27 +90,60 @@ class SunriseSunset(object):
         """
         Check if it is day or night. If the 'collar' keyword argument is
         changed it will skew the results to either before or after the real
-        sunrise and sunset. This is useful if lead and lag times are needed
+        sunrise and sunset. This is useful if lead and lag timea are needed
         around the actual sunrise and sunset.
+
         Note::
             If collar == 30 then this method will say it is daytime 30
             minutes before the actual sunrise and likewise 30 minutes after
             sunset it would indicate it is night.
+
         @keyword collar: The minutes before or after sunrise and sunset.
         @return: True if it is night else False if day.
         """
         result = False
-        delta = datetime.timedelta(minutes=collar)
+        # delta = datetime.timedelta(minutes=collar)
 
-        if (self.__sunrise - delta) > self.__dateLocal or \
-                self.__dateLocal > (self.__sunset + delta):
-            result = True
+        # if (self.__sunrise - delta) > self.__dateLocal or \
+        #        self.__dateLocal > (self.__sunset + delta):
+        #     result = True
+        #
+        # return result
+
+        #  Above comment out and below code modified by Sean Burns Aug 2014 to give a better is_night calc
+
+        """To determine if it is day or night we need to find the last transition (sunrise or sunset)
+        that occurred before the time in question.
+        If the last transition was a sunrise then it is day, if it was a sunset then it is night"""
+
+        # move forward a day, then start working backwards until a sunrise or a sunset or both occur
+        # before the datetime in question
+        one_day = datetime.timedelta(days=1)
+        working_date = self.__dateLocal + one_day
+        next_sunriseset = SunriseSunset(working_date, self.__lat, self.__lon, self.__zenith)
+        while next_sunriseset.get_sunriseset()[0] > self.__dateLocal \
+                and next_sunriseset.get_sunriseset()[1] > self.__dateLocal:
+            working_date = working_date - one_day
+            next_sunriseset = SunriseSunset(working_date, self.__lat, self.__lon, self.__zenith)
+
+        if next_sunriseset.get_sunriseset()[0] < self.__dateLocal \
+                and next_sunriseset.get_sunriseset()[1] < self.__dateLocal:
+            # both sunrise and sunset occur before
+            if next_sunriseset.get_sunriseset()[1] > next_sunriseset.get_sunriseset()[0]:
+                # sunset is the last occurrence
+                result = True
+        else:
+            # only one of the two transitions occurs before
+            if next_sunriseset.get_sunriseset()[1] < self.__dateLocal:
+                # sunset occured before
+                result = True
 
         return result
 
     def get_sunriseset(self):
         """
         Get the sunrise and sunset.
+
         @return: A C{datetime} object in a tuple (sunrise, sunset).
         """
         return self.__sunrise, self.__sunset
@@ -128,6 +164,7 @@ class SunriseSunset(object):
     def __determine_rise_or_set(self, ephem2000_day, rs):
         """
         Determine either the sunrise or the sunset.
+
         @param ephem2000_day: The Ephemeris from the beginning of the
                              21st century.
         @param rs: The factor that determines either sunrise or sunset where
@@ -150,10 +187,10 @@ class SunriseSunset(object):
             days = ephem2000_day + utold / (2 * pi)
             t = days / 36525
             # The magic numbers are orbital elements of the sun.
-            el = self.__get_range(4.8949504201433 + 628.331969753199 * t)
+            ell = self.__get_range(4.8949504201433 + 628.331969753199 * t)
             g = self.__get_range(6.2400408 + 628.3019501 * t)
             ec = 0.033423 * sin(g) + 0.00034907 * sin(2 * g)
-            lam = el + ec
+            lam = ell + ec
             e = -1 * ec + 0.0430398 * sin(2 * lam) - 0.00092502 * sin(4 * lam)
             obl = 0.409093 - 0.0002269 * t
             delta = sin(obl) * sin(lam)
@@ -173,11 +210,12 @@ class SunriseSunset(object):
 
         decimal_time = degrees(utnew) / 15
         # print utnew, decimal_time
-        return self.__get24_hour_local_time(rs, decimal_time)
+        return self.__get_24_hour_local_time(rs, decimal_time)
 
     def __get_range(self, value):
         """
         Get the range of the value.
+
         @param value: The domain.
         @return: The resultant range.
         """
@@ -187,10 +225,11 @@ class SunriseSunset(object):
             tmp2 += (2.0 * pi)
         return tmp2
 
-    def __get24_hour_local_time(self, rs, decimal_time):
+    def __get_24_hour_local_time(self, rs, decimal_time):
         """
         Convert the decimal time into a local time (C{datetime} object)
         and correct for a 24 hour clock.
+
         @param rs: The factor that determines either sunrise or sunset where
                    1 equals sunrise and -1 sunset.
         @param decimal_time: The decimal time.
