@@ -25,7 +25,7 @@ cursor.execute(query)
 updates = 0
 
 for flight in cursor:
-    nightHours = night_calc.nightCalc(flight[1],flight[2],flight[3],flight[4],flight[5],flight[6],'civil')
+    nightHours = night_calc.night_hours(flight[1], flight[2], flight[3], flight[4], flight[5], flight[6], 'civil')
     if nightHours[1] > datetime.timedelta(minutes=2): #3 minutes minimum
         # query2 = "UPDATE logbook_flights SET Night_Time = %s WHERE ID = %s"
         # data2 = (nightHours[1],flight[0])

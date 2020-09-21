@@ -99,8 +99,8 @@ for flight in flight_dict:
     arr_info = cursor.fetchone()  # tuple of (ICAO, lat, lon)
 
     # include night_time field
-    night_time = night_calc.nightCalc(flight['dep_time'], float(dep_info[1]), float(dep_info[2]),
-                                      flight['arr_time'], float(arr_info[1]), float(arr_info[2]),
+    night_time = night_calc.night_hours(flight['dep_time'], float(dep_info[1]), float(dep_info[2]),
+                                        flight['arr_time'], float(arr_info[1]), float(arr_info[2]),
                                       'civil')
 
     flight['night_time'] = night_time[1]
