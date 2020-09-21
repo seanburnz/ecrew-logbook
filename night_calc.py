@@ -20,8 +20,8 @@ def night_hours(dep_datetime, dep_lat, dep_lon, arr_datetime, arr_lat, arr_lon, 
     dep_sunrise_sunset = SunriseSunset(dep_datetime, dep_lat, dep_lon, zenith)
     arr_sunrise_sunset = SunriseSunset(arr_datetime, arr_lat, arr_lon, zenith)
 
-    is_night_dep = dep_sunrise_sunset.isNight()
-    is_night_arr = arr_sunrise_sunset.isNight()
+    is_night_dep = dep_sunrise_sunset.is_night()
+    is_night_arr = arr_sunrise_sunset.is_night()
 
     if is_night_dep == is_night_arr:
         if is_night_dep:
@@ -41,44 +41,44 @@ def night_hours(dep_datetime, dep_lat, dep_lon, arr_datetime, arr_lat, arr_lon, 
             # day to night - get ts1 next sunset immediately after dep_datetime tp1
             working_date = dep_datetime - one_day
             next_sunrise_sunset = SunriseSunset(working_date, dep_lat, dep_lon, zenith)
-            ts1 = next_sunrise_sunset.getSunRiseSet()[1]
+            ts1 = next_sunrise_sunset.get_sunriseset()[1]
             while ts1 < tp1:
                 # move forward a day
                 working_date = working_date + one_day
                 next_sunrise_sunset = SunriseSunset(working_date, dep_lat, dep_lon, zenith)
-                ts1 = next_sunrise_sunset.getSunRiseSet()[1]
+                ts1 = next_sunrise_sunset.get_sunriseset()[1]
 
             # calculate ts2 - the sunset immediately before arr_datetime tp2
             working_date = arr_datetime + one_day
             next_sunrise_sunset = SunriseSunset(working_date, arr_lat, arr_lon, zenith)
-            ts2 = next_sunrise_sunset.getSunRiseSet()[1]
+            ts2 = next_sunrise_sunset.get_sunriseset()[1]
             while ts2 > tp2:
                 # move back a day
                 working_date = working_date - one_day
                 next_sunrise_sunset = SunriseSunset(working_date, arr_lat, arr_lon, zenith)
-                ts2 = next_sunrise_sunset.getSunRiseSet()[1]
+                ts2 = next_sunrise_sunset.get_sunriseset()[1]
 
         else:
 
             # night to day - get ts1 next sunrise after departure time
             working_date = dep_datetime - one_day
             next_sunrise_sunset = SunriseSunset(working_date, dep_lat, dep_lon, zenith)
-            ts1 = next_sunrise_sunset.getSunRiseSet()[0]
+            ts1 = next_sunrise_sunset.get_sunriseset()[0]
             while ts1 < tp1:
                 # move forward a day
                 working_date = working_date + one_day
                 next_sunrise_sunset = SunriseSunset(working_date, dep_lat, dep_lon, zenith)
-                ts1 = next_sunrise_sunset.getSunRiseSet()[0]
+                ts1 = next_sunrise_sunset.get_sunriseset()[0]
 
             # night to day - ts2 = sunrise preceding arrival time
             working_date = arr_datetime + one_day
             next_sunrise_sunset = SunriseSunset(working_date, arr_lat, arr_lon, zenith)
-            ts2 = next_sunrise_sunset.getSunRiseSet()[0]
+            ts2 = next_sunrise_sunset.get_sunriseset()[0]
             while ts2 > tp2:
                 # move back a day
                 working_date = working_date - one_day
                 next_sunrise_sunset = SunriseSunset(working_date, arr_lat, arr_lon, zenith)
-                ts2 = next_sunrise_sunset.getSunRiseSet()[0]
+                ts2 = next_sunrise_sunset.get_sunriseset()[0]
 
         # calculate t, the time the flight meets the sun transition
         """ tp1 = time plane departs
